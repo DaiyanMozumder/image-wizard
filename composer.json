@@ -30,6 +30,11 @@
             "DaiyanMozumder\\ImageWizard\\Tests\\": "tests/"
         }
     },
+    "scripts": {
+        "post-autoload-dump": [
+            "DaiyanMozumder\\ImageWizard\\InstallPythonDependencies::install"
+        ]
+    },
     "extra": {
         "laravel": {
             "providers": [

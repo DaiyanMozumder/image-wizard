@@ -14,7 +14,8 @@ return [
     |--------------------------------------------------------------------------
     */
     'python' => [
-        'executable' => env('IMAGE_WIZARD_PYTHON_EXECUTABLE', 'python3'),
+        // Setting to null allows the package to automatically detect the internal .venv path.
+        'executable' => env('IMAGE_WIZARD_PYTHON_EXECUTABLE', null),
         'script_path' => env('IMAGE_WIZARD_PYTHON_SCRIPT_PATH', base_path('vendor/daiyanmozumder/image-wizard/python/engine.py')),
         'timeout' => 60, // seconds
     ],

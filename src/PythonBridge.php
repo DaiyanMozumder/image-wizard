@@ -14,19 +14,11 @@ class PythonBridge
 
     public function __construct(array $config)
     {
-        $this->executable = $config['executable'] ?? 'python';
-        // Fallback to finding the python folder relative to src directory
+        $this->executable = $config['executable'] ?? $this->detectVirtualEnvPython();
         $this->scriptPath = $config['script_path'] ?? dirname(__DIR__) . '/python/engine.py';
         $this->timeout = $config['timeout'] ?? 60;
     }
 
-    /**
-     * Execute the Python engine with the given payload.
-     *
-     * @param array $payload
-     * @return array
-     * @throws PythonExecutionException
-     */
     public function execute(array $payload): array
     {
         $process = $this->createProcess();
@@ -53,16 +45,30 @@ class PythonBridge
         return $result;
     }
 
-    /**
-     * Create the Symfony Process instance.
-     * Protected to allow overriding in tests if needed.
-     *
-     * @return Process
-     */
     protected function createProcess(): Process
     {
         $process = new Process([$this->executable, $this->scriptPath]);
         $process->setTimeout($this->timeout);
         return $process;
+    }
+    
+    /**
+     * Detect the internal isolated virtual environment python executable.
+     */
+    protected function detectVirtualEnvPython(): string
+    {
+        $basePath = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'python' . DIRECTORY_SEPARATOR . '.venv';
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+        
+        $venvPython = $isWindows 
+            ? $basePath . DIRECTORY_SEPARATOR . 'Scripts' . DIRECTORY_SEPARATOR . 'python.exe'
+            : $basePath . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'python';
+            
+        if (file_exists($venvPython)) {
+            return $venvPython;
+        }
+        
+        // Fallback to system python if venv is missing
+        return 'python';
     }
 }
