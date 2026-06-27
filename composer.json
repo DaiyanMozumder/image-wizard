@@ -1,0 +1,45 @@
+{
+    "name": "daiyanmozumder/image-wizard",
+    "description": "Enterprise Laravel Image Processing Package powered by Python",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "image", "processing", "python", "pillow", "webp", "avif", "watermark", "queue", "batch", "optimization"],
+    "authors": [
+        {
+            "name": "Daiyan Mozumder",
+            "email": "hello@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1|^8.2|^8.3",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/contracts": "^10.0|^11.0|^12.0",
+        "symfony/process": "^6.2|^7.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DaiyanMozumder\\ImageWizard\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DaiyanMozumder\\ImageWizard\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "DaiyanMozumder\\ImageWizard\\ImageWizardServiceProvider"
+            ],
+            "aliases": {
+                "ImageWizard": "DaiyanMozumder\\ImageWizard\\Facades\\ImageWizard"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
