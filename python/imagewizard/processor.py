@@ -54,7 +54,18 @@ class ImageProcessor:
                 bg.paste(image, mask=image.split()[3] if len(image.split()) == 4 else None)
                 image = bg
                 
-            image.save(self.destination, **save_kwargs)
+            try:
+                image.save(self.destination, **save_kwargs)
+            except Exception as save_err:
+                if target_format == 'AVIF' and image.mode in ('RGBA', 'LA', 'P'):
+                    bg = Image.new("RGB", image.size, (255, 255, 255))
+                    if image.mode == 'P':
+                        image = image.convert('RGBA')
+                    bg.paste(image, mask=image.split()[3] if len(image.split()) == 4 else None)
+                    image = bg
+                    image.save(self.destination, **save_kwargs)
+                else:
+                    raise save_err
             
             return {
                 "success": True, 

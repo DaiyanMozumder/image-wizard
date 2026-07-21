@@ -11,18 +11,23 @@ def main():
             
         payload = json.loads(input_data)
         
+        action = payload.get('action')
+        if not action:
+            print(json.dumps({"success": False, "error": "No action specified"}))
+            sys.exit(1)
+            
         # Backward compatibility for 'ping' during tests
-        if payload.get('action') == 'ping':
+        if action == 'ping':
             print(json.dumps({"success": True, "data": {"message": "pong"}}))
             sys.exit(0)
             
-        if payload.get('action') == 'process':
+        if action == 'process':
             processor = ImageProcessor(payload)
             result = processor.execute()
             print(json.dumps(result))
             sys.exit(0)
             
-        print(json.dumps({"success": False, "error": f"Unknown action: {payload.get('action')}"}))
+        print(json.dumps({"success": False, "error": f"Unknown action: {action}"}))
         sys.exit(1)
         
     except json.JSONDecodeError as e:

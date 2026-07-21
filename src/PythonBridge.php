@@ -27,6 +27,12 @@ class PythonBridge
         try {
             $process->mustRun();
         } catch (ProcessFailedException $e) {
+            $output = $process->getOutput();
+            $result = json_decode($output, true);
+            if (json_last_error() === JSON_ERROR_NONE && isset($result['success']) && $result['success'] === false) {
+                $error = $result['error'] ?? 'Unknown Python error';
+                throw new PythonExecutionException("Python engine reported an error: " . $error, 0, $e);
+            }
             throw new PythonExecutionException("Python execution failed: " . $e->getMessage(), 0, $e);
         }
 
