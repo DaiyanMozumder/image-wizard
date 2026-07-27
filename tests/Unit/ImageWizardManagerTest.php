@@ -9,6 +9,26 @@ use PHPUnit\Framework\TestCase;
 
 class ImageWizardManagerTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Create dummy valid JPEG image
+        $img = imagecreatetruecolor(100, 100);
+        imagejpeg($img, 'input.jpg');
+        imagepng($img, 'logo.png');
+        imagedestroy($img);
+    }
+
+    protected function tearDown(): void
+    {
+        foreach (['input.jpg', 'logo.png', 'output.jpg'] as $file) {
+            if (file_exists($file)) {
+                @unlink($file);
+            }
+        }
+        parent::tearDown();
+    }
+
     public function test_it_throws_exception_if_methods_called_before_load()
     {
         $manager = new ImageWizardManager([]);

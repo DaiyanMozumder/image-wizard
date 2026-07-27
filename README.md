@@ -26,7 +26,7 @@ Laravel handles the orchestration, fluent API, and background queueing, while Py
 - **Laravel Queues**: Send massive batch jobs to the background instantly with `->queue()`.
 - **Cloud Storage (S3)**: Seamlessly pull/push to AWS S3 or Local disks with `->fromDisk()` and `->toDisk()`.
 - **Variant Generator**: Automatically spawn `thumbnail`, `medium`, and `large` responsive variants based on config presets.
-- **Watermark Engine**: Apply image watermarks with precise CSS-like positioning and alpha opacity.
+- **Watermark Engine**: Apply image watermarks with CSS-like positioning, alpha opacity, automatic wide-logo cropping, smart dynamic rescaling, and auto-margins.
 - **Next-Gen Formats**: Built-in support for converting to WebP and AVIF.
 
 ---
@@ -88,6 +88,47 @@ return [
 
 ---
 
+## 🌐 Setting up Python on cPanel
+
+On cPanel hosting environments, do **not** use cPanel's *"Setup Python App"* GUI web application tool (as it overrides your domain's web traffic with Python WSGI instead of serving your Laravel PHP application). 
+
+Instead, create a standalone command-line Python virtual environment via cPanel Terminal / SSH:
+
+1. **Open cPanel Terminal** (under *Advanced*) or connect via SSH.
+2. **Create a Python virtual environment** (`--without-pip` prevents `ensurepip` errors common on cPanel):
+   ```bash
+   python3 -m venv --without-pip ~/image_wizard_env
+   ```
+3. **Activate the environment**:
+   ```bash
+   source ~/image_wizard_env/bin/activate
+   ```
+4. **Install `pip` and `Pillow`**:
+   - *For Python 3.10+*:
+     ```bash
+     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+     python get-pip.py
+     rm get-pip.py
+     pip install Pillow
+     ```
+   - *For Python 3.9*:
+     ```bash
+     curl https://bootstrap.pypa.io/pip/3.9/get-pip.py -o get-pip.py
+     python get-pip.py
+     rm get-pip.py
+     pip install Pillow
+     ```
+5. **Set the executable path in your Laravel `.env`**:
+   ```env
+   IMAGE_WIZARD_PYTHON_EXECUTABLE=/home/YOUR_CPANEL_USERNAME/image_wizard_env/bin/python
+   ```
+6. **Clear your Laravel config cache**:
+   ```bash
+   php artisan config:clear
+   ```
+
+---
+
 ## 📖 Usage Guide
 
 ### Basic Processing
@@ -119,17 +160,23 @@ ImageWizard::load('image.jpg')
 
 ### Watermarks
 
-Overlay logos onto your images. You can control opacity, margin, and CSS-like positioning (`bottom-right`, `top-left`, `center`, etc.).
+Overlay logos onto your images with intelligent scaling, automatic cropping for wide logos, CSS-like positioning, opacity, and dynamic margins.
 
 ```php
 ImageWizard::load('photo.jpg')
     ->watermark('logo.png', [
-        'position' => 'bottom-right',
-        'opacity' => 0.6, // 60% opacity
-        'margin' => 20    // 20px offset from the edge
+        'position'   => 'bottom-right', // CSS-like positioning: top-left, center, bottom-right, etc.
+        'opacity'    => 0.6,            // 60% opacity (0.0 to 1.0)
+        'size_ratio' => 0.12,           // Auto-scales watermark to 12% of main image's smaller dimension (default: 0.12)
+        'margin'     => 20,             // Explicit margin offset in px (auto-calculated as 3% min 10px if omitted)
     ])
     ->save('photo-watermarked.jpg');
 ```
+
+#### Smart Watermark Features:
+- **Aspect Ratio Crop (Wide Logos)**: If a logo has an aspect ratio `width / height > 1.5` (e.g. logo with company text), Image Wizard automatically crops `(0, 0, height, height)` to isolate the left square icon mark.
+- **Smart Dynamic Rescaling**: Automatically resizes the watermark relative to the target image (`size_ratio`, default 12%), so watermarks stay proportionally sized on high-res and low-res photos alike.
+- **Smart Dynamic Margin**: If no `margin` is provided, margin is auto-calculated as 3% of the target image's smaller dimension (minimum 10px).
 
 ### Cloud Storage (AWS S3)
 
