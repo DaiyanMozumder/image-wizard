@@ -46,7 +46,18 @@ class ImageProcessor:
             if preserve_metadata and exif_data:
                 save_kwargs['exif'] = exif_data
                 
-            target_format = save_kwargs.get('format', image.format).upper() if image.format else 'JPEG'
+            # Determine target format: explicit config -> file extension -> source format -> default JPEG
+            target_format = save_kwargs.get('format')
+            if not target_format:
+                _, ext = os.path.splitext(self.destination)
+                if ext:
+                    target_format = ext[1:].upper()
+                    if target_format == 'JPG':
+                        target_format = 'JPEG'
+                        
+            if not target_format:
+                target_format = image.format.upper() if image.format else 'JPEG'
+                
             if target_format == 'JPEG' and image.mode in ('RGBA', 'LA', 'P'):
                 bg = Image.new("RGB", image.size, (255, 255, 255))
                 if image.mode == 'P':
